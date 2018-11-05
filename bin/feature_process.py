@@ -10,8 +10,8 @@ def set_missing_ages(df):
     
     age_df = df[['Age', 'Fare', 'Parch', 'SibSp', 'Pclass']]
 
-    known_age = age_df[age_df.Age.notnull()].as_matrix()
-    unknown_age = age_df[age_df.Age.isnull()].as_matrix()
+    known_age = age_df[age_df.Age.notnull()].values
+    unknown_age = age_df[age_df.Age.isnull()].values
 
     y = known_age[:, 0]
     X = known_age[:, 1:]
@@ -47,11 +47,14 @@ if __name__ == '__main__':
     df.drop(['Cabin', 'Embarked', 'Sex', 'Pclass', 'Ticket', 'Name'], axis=1, inplace=True)
     
     scaler = preprocessing.StandardScaler()
-    age_scale_param = scaler.fit([df['Age']])
-    df['Age_scaled'] = scaler.fit_transform([df['Age']], age_scale_param)
-    fare_scale_param = scaler.fit([df['Fare']])
-    df['fare_scaled'] = scaler.fit_transform([df['Fare']], fare_scale_param)
-    print age_scale_param
+    # print type(df['Age'])
+    age_scale_param = scaler.fit(df[['Age']])
+    age_scaled = scaler.fit_transform(df[['Age']], age_scale_param)
+    
+    df['Age_scaled'] = scaler.fit_transform(df[['Age']], age_scale_param)
+    fare_scale_param = scaler.fit(df[['Fare']])
+    df['fare_scaled'] = scaler.fit_transform(df[['Fare']], fare_scale_param)
 
+    print df
     df.info()
 
