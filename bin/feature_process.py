@@ -1,10 +1,10 @@
+# coding: utf-8
 import pandas as pd
 import numpy as np
 from pandas import Series, DataFrame
-
-data_train = pd.read_csv('../data/Train.csv')
-
 from sklearn.ensemble import RandomForestRegressor
+import sklearn.preprocessing as preprocessing
+
 
 def set_missing_ages(df):
     
@@ -15,7 +15,7 @@ def set_missing_ages(df):
 
     y = known_age[:, 0]
     X = known_age[:, 1:]
-
+    # n_jobs=-1 means as more as number of CPU
     rfr = RandomForestRegressor(random_state=0, n_estimators=2000, n_jobs=-1)
     rfr.fit(X, y)
 
@@ -32,7 +32,26 @@ def set_Cabin_type(df):
     
     return df
 
-data_train, rfr = set_missing_ages(data_train)
-data_train = set_Cabin_type(data_train)
 
+if __name__ == '__main__':
+    data_train = pd.read_csv('../data/Train.csv')
+    data_train, rfr = set_missing_ages(data_train)
+    data_train = set_Cabin_type(data_train)
+    
+    dummies_Cabin = pd.get_dummies(data_train['Cabin'], prefix='Cabin')
+    dummies_Embarked = pd.get_dummies(data_train['Embarked'], prefix='Embarked')
+    dummies_Sex = pd.get_dummies(data_train['Sex'], prefix='Sex')
+    dummies_Pclass = pd.get_dummies(data_train['Pclass'], prefix='Pclass')
+    
+    df = pd.concat([data_train, dummies_Cabin, dummies_Embarked, dummies_Sex, dummies_Pclass], axis=1)
+    df.drop(['Cabin', 'Embarked', 'Sex', 'Pclass', 'Ticket', 'Name'], axis=1, inplace=True)
+    
+    scaler = preprocessing.StandardScaler()
+    age_scale_param = scaler.fit([df['Age']])
+    df['Age_scaled'] = scaler.fit_transform([df['Age']], age_scale_param)
+    fare_scale_param = scaler.fit([df['Fare']])
+    df['fare_scaled'] = scaler.fit_transform([df['Fare']], fare_scale_param)
+    print age_scale_param
+
+    df.info()
 
